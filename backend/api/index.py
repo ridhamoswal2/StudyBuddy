@@ -9,11 +9,14 @@ BACKEND_DIR = CURRENT_DIR.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
+# Keep a top-level app object so Vercel can always detect it.
+app = FastAPI()
+
 try:
-    from server import app  # noqa: E402
+    from server import app as server_app  # noqa: E402
+    app = server_app
 except Exception as exc:  # pragma: no cover
     # Provide a readable response in Vercel instead of generic crash page.
-    app = FastAPI()
     startup_error = str(exc)
 
     @app.get("/{path:path}")
@@ -26,3 +29,6 @@ except Exception as exc:  # pragma: no cover
                 "detail": startup_error,
             },
         )
+
+# Explicit handler alias for runtimes that check this symbol.
+handler = app

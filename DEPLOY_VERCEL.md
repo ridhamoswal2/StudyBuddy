@@ -1,20 +1,25 @@
-# Deploy StudyBuddy on Vercel (Frontend + Backend)
+# Deploy StudyBuddy on Vercel (Step-by-Step)
 
-This project should be deployed as **two separate Vercel projects** from the same repo:
+Deploy as **2 separate Vercel projects** from the same GitHub repo:
+- Project A: `backend`
+- Project B: `frontend`
 
-- Project 1: `frontend` (React app)
-- Project 2: `backend` (FastAPI API)
+Do backend first, then frontend.
 
-## 1) Deploy Backend (`backend` folder)
+---
 
-1. In Vercel, click **New Project** and import this repo.
-2. Set **Root Directory** to `backend`.
-3. Vercel will use `backend/vercel.json` and deploy FastAPI from `backend/api/index.py`.
-4. Add these Environment Variables in the backend project:
+## 1) Backend deployment (first)
+
+1. Open Vercel -> **Add New... -> Project**.
+2. Import this repo.
+3. Set **Root Directory** to `backend`.
+4. Framework preset: keep as **Other** (or default).
+5. Do not manually override build command. `backend/vercel.json` handles routing.
+6. Add backend Environment Variables (Production + Preview):
    - `MONGO_URL`
    - `DB_NAME`
-   - `CORS_ORIGINS` (include frontend URL)
-   - `FRONTEND_URL` (your frontend Vercel URL)
+   - `CORS_ORIGINS`
+   - `FRONTEND_URL`
    - `OPENROUTER_API_KEY`
    - `OPENROUTER_MODEL` (recommended: `inclusionai/ling-2.6-1t:free`)
    - `OPENROUTER_BASE_URL` (`https://openrouter.ai/api/v1`)
@@ -23,55 +28,80 @@ This project should be deployed as **two separate Vercel projects** from the sam
    - `FIREBASE_WEB_API_KEY`
    - `FIREBASE_PROJECT_ID`
    - `FIREBASE_PRIVATE_KEY_ID`
-   - `FIREBASE_PRIVATE_KEY` (with `\n` newlines escaped)
+   - `FIREBASE_PRIVATE_KEY` (must keep `\n` escaped)
    - `FIREBASE_CLIENT_EMAIL`
    - `FIREBASE_CLIENT_ID`
    - `FIREBASE_CLIENT_X509_CERT_URL`
    - `ADMIN_EMAIL` (optional)
-5. Deploy and copy backend URL (example: `https://studybuddy-api.vercel.app`).
+7. Click **Deploy**.
+8. After deploy, open:
+   - `https://<your-backend-domain>/api/health`
+   - Must return: `{"status":"healthy"}`
 
-## 2) Deploy Frontend (`frontend` folder)
+If this fails, do not proceed to frontend yet.
 
-1. Create another **New Project** in Vercel from same repo.
+---
+
+## 2) Frontend deployment (second)
+
+1. Create another Vercel project from same repo.
 2. Set **Root Directory** to `frontend`.
-3. Build settings:
-   - Build command: `npm run build`
-   - Output directory: `build`
-4. Add these frontend env vars:
-   - `REACT_APP_BACKEND_URL` = your backend URL from step 1
+3. Add frontend Environment Variables (Production + Preview):
+   - `REACT_APP_BACKEND_URL` = backend domain from step 1
    - `REACT_APP_FIREBASE_API_KEY`
    - `REACT_APP_FIREBASE_AUTH_DOMAIN`
    - `REACT_APP_FIREBASE_PROJECT_ID`
    - `REACT_APP_FIREBASE_APP_ID`
-5. Deploy.
+4. Deploy.
 
-## 3) Post-deploy checks
+This project already uses `frontend/vercel.json` with:
+- `installCommand: npm install --legacy-peer-deps`
+- `buildCommand: npm run build`
+- `outputDirectory: build`
 
-1. Open backend URL + `/api/health` and verify `{"status":"healthy"}`.
-2. Open frontend URL and test:
-   - Email signup/login
-   - Google login/signup
-   - Chat response generation
-   - Quiz generation
-3. If auth fails:
-   - Verify Firebase Auth providers are enabled.
-   - Add both frontend Vercel domains to Firebase authorized domains.
-4. If API calls fail from frontend:
-   - Confirm backend `CORS_ORIGINS` includes frontend Vercel URL.
-   - Confirm `REACT_APP_BACKEND_URL` points to deployed backend.
+So the previous `npm ERESOLVE` error should be fixed.
 
-## 4) Troubleshooting
+---
 
-### Frontend build fails on Vercel with `ERESOLVE`
-- This project uses `frontend/vercel.json` with:
-  - `installCommand: npm install --legacy-peer-deps`
-- Re-deploy after pulling latest changes.
+## 3) Firebase settings required
 
-### Backend link shows "Serverless Function has crashed"
-- Open backend project -> **Deployments** -> **Functions Logs**.
-- Most common cause: missing backend env vars.
-- Required at minimum:
-  - `MONGO_URL`
-  - `DB_NAME`
-  - Firebase admin vars (`FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL`, etc.)
-- After updating env vars, trigger **Redeploy**.
+In Firebase Console:
+1. Authentication -> Sign-in method:
+   - Enable **Email/Password**
+   - Enable **Google**
+2. Authentication -> Settings -> Authorized domains:
+   - Add your frontend Vercel domain
+   - Add your preview frontend Vercel domain (if used)
+
+---
+
+## 4) Final test checklist
+
+1. Open frontend URL.
+2. Test Email signup/login.
+3. Test Google signup/login.
+4. Test Chat message generation.
+5. Test Quiz generation.
+
+---
+
+## 5) Troubleshooting
+
+### A) Error: `Could not find a top-level "app"... in api/index.py`
+- Fixed in latest code.
+- Pull latest commit and redeploy backend.
+
+### B) Backend shows `Serverless Function has crashed`
+1. Open backend project -> Deployments -> latest deployment -> **Function Logs**.
+2. Check missing env var or invalid key format.
+3. Most common issue: `FIREBASE_PRIVATE_KEY` pasted with real line breaks.
+   - It must be one line with `\n` sequences.
+4. Redeploy after env correction.
+
+### C) Frontend build fails with `ERESOLVE`
+- Ensure latest `frontend/vercel.json` is deployed.
+- It forces `npm install --legacy-peer-deps`.
+
+### D) CORS/auth issues after deploy
+- `FRONTEND_URL` and `CORS_ORIGINS` in backend must include frontend Vercel URL.
+- `REACT_APP_BACKEND_URL` in frontend must point to backend Vercel URL.
