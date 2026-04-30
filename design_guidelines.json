@@ -1,0 +1,99 @@
+{
+  "theme": "Light",
+  "archetype": "3 (Pastel & Soft) mixed with Neo-Brutalism (Bold, clashing primaries, thick black borders)",
+  "mood": "Optimistic, Playful, Structured, Functional",
+  "colors": {
+    "background": "#FFFDF7",
+    "surface": "#FFFFFF",
+    "primary": "#FFDE59",
+    "secondary": "#B2F5EA",
+    "accent": "#C3B1E1",
+    "danger": "#FF6B6B",
+    "border": "#0A0A0A",
+    "text_primary": "#0A0A0A",
+    "text_secondary": "#52525B"
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Outfit, sans-serif",
+      "body": "DM Sans, sans-serif"
+    },
+    "weights": {
+      "headings": ["800", "900"],
+      "body": ["400", "500", "700"]
+    },
+    "sizes": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight",
+      "h3": "text-xl sm:text-2xl tracking-tight",
+      "h4": "text-lg sm:text-xl font-bold",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm font-medium uppercase tracking-[0.1em]"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-8 md:p-12",
+    "gap": "gap-8 md:gap-12",
+    "radius": "rounded-none",
+    "borders": "border-2 border-[#0A0A0A]",
+    "shadows": "shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[6px_6px_0px_#0A0A0A] transition-shadow duration-200"
+  },
+  "components": {
+    "cards": {
+      "classes": "bg-white border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] p-6 sm:p-8 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#0A0A0A] transition-all duration-200"
+    },
+    "buttons": {
+      "primary": "bg-[#FFDE59] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0A0A0A] font-bold px-6 py-3 transition-all",
+      "secondary": "bg-[#B2F5EA] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0A0A0A] font-bold px-6 py-3 transition-all",
+      "danger": "bg-[#FF6B6B] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] font-bold px-6 py-3"
+    },
+    "inputs": {
+      "classes": "bg-white border-2 border-[#0A0A0A] rounded-none p-4 text-base focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_#0A0A0A] transition-shadow w-full"
+    },
+    "badges": {
+      "classes": "bg-[#C3B1E1] text-[#0A0A0A] border-2 border-[#0A0A0A] px-3 py-1 text-sm font-bold uppercase tracking-wider inline-block"
+    },
+    "chat_bubbles": {
+      "user": "bg-[#B2F5EA] border-2 border-[#0A0A0A] p-5 rounded-none shadow-[2px_2px_0px_#0A0A0A]",
+      "ai": "bg-white border-2 border-[#0A0A0A] p-5 rounded-none shadow-[2px_2px_0px_#0A0A0A]"
+    }
+  },
+  "animations": {
+    "hover": "transition-all duration-200 ease-in-out",
+    "entrance": "animate-in fade-in slide-in-from-bottom-4 duration-500"
+  },
+  "icons": {
+    "library": "lucide-react",
+    "stroke_width": "2.5"
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_onboarding",
+        "url": "https://images.unsplash.com/photo-1758685733395-dba201403b4d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwyfHxzdHVkZW50JTIwc3R1ZHlpbmclMjBsYXB0b3AlMjBicmlnaHR8ZW58MHx8fHwxNzc1OTI5MTcwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Smiling student studying with laptop. Use for welcome screens, empty states, or onboarding to create a friendly human connection."
+      },
+      {
+        "category": "abstract_shapes",
+        "url": "https://images.unsplash.com/photo-1751644332113-2004a1b143f1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZ2VvbWV0cmljJTIwc2hhcGVzJTIwY29sb3JmdWx8ZW58MHx8fHwxNzc1OTI5MTg0fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Colorful minimalist 3D geometric shapes. Perfect for quiz completion screens, empty streaks, or flashcard backgrounds."
+      }
+    ]
+  },
+  "accessibility": {
+    "focus_ring": "focus-visible:ring-4 focus-visible:ring-[#FFDE59] focus-visible:outline-none",
+    "contrast": "Ensure black text (#0A0A0A) over pastel backgrounds to pass APCA and WCAG standards.",
+    "testing_attributes": "All buttons, inputs, links, and actionable items MUST have data-testid kebab-case attributes."
+  },
+  "instructions_to_main_agent": [
+    "Inject Google Fonts 'Outfit' and 'DM Sans' in the main HTML file.",
+    "Strictly follow the Neo-Brutalism aesthetic. DO NOT use generic soft shadows. Use hard solid shadows (e.g. shadow-[4px_4px_0px_#0A0A0A]).",
+    "No border-radius unless explicitly needed. Use 'rounded-none'.",
+    "For complex components (Tabs, Dropdowns, Modals) imported from Shadcn, heavily override styles to remove default Vercel-look. Ensure they adopt the 2px black border and hard shadows.",
+    "Use grid-cols-1 md:grid-cols-3 or 4 for dashboard layouts (Bento box approach) with tight gaps (gap-6) and ensure cells stretch using h-full.",
+    "Never use full-width cards on desktop, center them or place them in an asymmetrical grid.",
+    "Icons should use stroke-width 2.5px to match the bold borders.",
+    "Ensure 'data-testid' is attached to all key interactable elements.",
+    "Use pure HTML and Tailwind CSS for custom structural sections where Shadcn is too rigid."
+  ]
+}

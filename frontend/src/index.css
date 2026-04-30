@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #FFFDF7;
+  --surface: #FFFFFF;
+  --primary: #FFDE59;
+  --secondary: #B2F5EA;
+  --accent: #C3B1E1;
+  --danger: #FF6B6B;
+  --border: #0A0A0A;
+  --text-primary: #0A0A0A;
+  --text-secondary: #52525B;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #0A0A0A;
+  border: 2px solid var(--bg-main);
+}
+
+/* Neo-brutalist button animation */
+.neo-btn {
+  transition: all 0.15s ease;
+}
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+}
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #0A0A0A !important;
+}
+
+/* Card hover */
+.neo-card {
+  transition: all 0.2s ease;
+}
+.neo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 8px 8px 0px #0A0A0A;
+}
+
+/* Flashcard flip */
+.flashcard-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+.flashcard-inner.flipped {
+  transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+  backface-visibility: hidden;
+  position: absolute;
+  inset: 0;
+}
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* Entrance animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* Stagger animations */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+
+/* Chat message animation */
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-msg {
+  animation: fadeInMsg 0.3s ease-out forwards;
+}
+
+/* Loading dots */
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+.loading-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0A0A0A;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@layer base {
+  :root {
+    --background: 48 100% 98%;
+    --foreground: 0 0% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 48 100% 67%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 168 84% 83%;
+    --secondary-foreground: 0 0% 4%;
+    --muted: 48 40% 92%;
+    --muted-foreground: 0 0% 32%;
+    --accent: 266 44% 79%;
+    --accent-foreground: 0 0% 4%;
+    --destructive: 0 73% 70%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 4%;
+    --input: 0 0% 4%;
+    --ring: 48 100% 67%;
+    --chart-1: 48 100% 67%;
+    --chart-2: 168 84% 83%;
+    --chart-3: 266 44% 79%;
+    --chart-4: 0 73% 70%;
+    --chart-5: 0 0% 4%;
+    --radius: 0rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  [data-debug-wrapper="true"] {
+    display: contents !important;
+  }
+  [data-debug-wrapper="true"] > * {
+    margin-left: inherit; margin-right: inherit;
+    margin-top: inherit; margin-bottom: inherit;
+    padding-left: inherit; padding-right: inherit;
+    padding-top: inherit; padding-bottom: inherit;
+    column-gap: inherit; row-gap: inherit; gap: inherit;
+    border-left-width: inherit; border-right-width: inherit;
+    border-top-width: inherit; border-bottom-width: inherit;
+    border-left-style: inherit; border-right-style: inherit;
+    border-top-style: inherit; border-bottom-style: inherit;
+    border-left-color: inherit; border-right-color: inherit;
+    border-top-color: inherit; border-bottom-color: inherit;
+  }
+}

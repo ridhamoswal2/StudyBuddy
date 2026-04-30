@@ -1,0 +1,101 @@
+/* App layout */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #FFFDF7;
+}
+
+.app-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: #FFFFFF;
+  border-right: 2px solid #0A0A0A;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  transition: transform 0.3s ease;
+}
+
+.app-main {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+/* Mobile sidebar */
+@media (max-width: 768px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+  .app-main {
+    margin-left: 0;
+  }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 35;
+  }
+}
+
+/* Quiz option styling */
+.quiz-option {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.quiz-option:hover {
+  transform: translateX(4px);
+  background: #FFDE59;
+}
+.quiz-option.selected {
+  background: #FFDE59;
+  box-shadow: 4px 4px 0px #0A0A0A;
+}
+.quiz-option.correct {
+  background: #B2F5EA;
+}
+.quiz-option.incorrect {
+  background: #FF6B6B;
+}
+
+/* Markdown content styling */
+.markdown-content h1 { font-size: 1.5rem; font-weight: 800; margin: 1rem 0 0.5rem; font-family: 'Outfit', sans-serif; }
+.markdown-content h2 { font-size: 1.25rem; font-weight: 700; margin: 0.75rem 0 0.5rem; font-family: 'Outfit', sans-serif; }
+.markdown-content h3 { font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0 0.25rem; font-family: 'Outfit', sans-serif; }
+.markdown-content p { margin: 0.5rem 0; line-height: 1.7; }
+.markdown-content ul, .markdown-content ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+.markdown-content li { margin: 0.25rem 0; }
+.markdown-content code {
+  background: #F4F4F5;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid #0A0A0A;
+  font-size: 0.875rem;
+}
+.markdown-content pre {
+  background: #0A0A0A;
+  color: #F4F4F5;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 2px solid #0A0A0A;
+  margin: 0.75rem 0;
+}
+.markdown-content pre code {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+}
+.markdown-content blockquote {
+  border-left: 4px solid #FFDE59;
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: #52525B;
+}
+.markdown-content strong { font-weight: 700; }
+.markdown-content a { color: #0A0A0A; text-decoration: underline; font-weight: 500; }
