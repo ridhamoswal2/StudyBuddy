@@ -98,6 +98,11 @@ In Firebase Console:
    - It must be one line with `\n` sequences.
 4. Redeploy after env correction.
 
+### E) `Application startup failed. Exiting.` with read-only filesystem
+- Root cause: server tried writing `memory/test_credentials.md` on startup.
+- Fixed in latest code by skipping that write when filesystem is read-only.
+- Pull latest changes and redeploy backend.
+
 ### C) Frontend build fails with `ERESOLVE`
 - Ensure latest `frontend/vercel.json` is deployed.
 - It forces `npm install --legacy-peer-deps`.

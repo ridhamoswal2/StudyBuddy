@@ -1003,14 +1003,18 @@ async def seed_admin():
         })
         logger.info(f"Admin user seeded: {admin_email}")
     
-    # Write setup notes in the project memory folder (cross-platform).
-    credentials_path = ROOT_DIR.parent / "memory" / "test_credentials.md"
-    credentials_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(credentials_path, "w", encoding="utf-8") as f:
-        f.write("# Auth Setup Notes\n\n")
-        f.write(f"## Admin Record\n- Email: {admin_email}\n- Role: admin\n")
-        f.write("- Sign in this email through Firebase Auth and it will map to admin role.\n\n")
-        f.write("## Auth Endpoints\n- POST /api/auth/register\n- POST /api/auth/login\n- POST /api/auth/logout\n- GET /api/auth/me\n- POST /api/auth/refresh\n")
+    # On serverless hosts (like Vercel), project filesystem can be read-only.
+    # Keep startup resilient by skipping this optional note file if write fails.
+    try:
+        credentials_path = ROOT_DIR.parent / "memory" / "test_credentials.md"
+        credentials_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(credentials_path, "w", encoding="utf-8") as f:
+            f.write("# Auth Setup Notes\n\n")
+            f.write(f"## Admin Record\n- Email: {admin_email}\n- Role: admin\n")
+            f.write("- Sign in this email through Firebase Auth and it will map to admin role.\n\n")
+            f.write("## Auth Endpoints\n- POST /api/auth/register\n- POST /api/auth/login\n- POST /api/auth/logout\n- GET /api/auth/me\n- POST /api/auth/refresh\n")
+    except OSError as exc:
+        logger.warning(f"Skipping test credentials file write: {exc}")
 
 @app.on_event("startup")
 async def startup():
