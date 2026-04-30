@@ -15,7 +15,24 @@ export default function ChatPage() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    fetchSessions();
+    const loadInitialSessions = async () => {
+      try {
+        const res = await axios.get(`${API}/chat/sessions`);
+        setSessions(res.data);
+        if (res.data.length > 0) {
+          const firstSessionId = res.data[0].id;
+          setActiveSession(firstSessionId);
+          const msgRes = await axios.get(`${API}/chat/sessions/${firstSessionId}/messages`);
+          setMessages(msgRes.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch sessions", e);
+      } finally {
+        setLoadingSessions(false);
+      }
+    };
+
+    loadInitialSessions();
   }, []);
 
   useEffect(() => {
