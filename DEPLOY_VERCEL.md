@@ -59,3 +59,19 @@ This project should be deployed as **two separate Vercel projects** from the sam
 4. If API calls fail from frontend:
    - Confirm backend `CORS_ORIGINS` includes frontend Vercel URL.
    - Confirm `REACT_APP_BACKEND_URL` points to deployed backend.
+
+## 4) Troubleshooting
+
+### Frontend build fails on Vercel with `ERESOLVE`
+- This project uses `frontend/vercel.json` with:
+  - `installCommand: npm install --legacy-peer-deps`
+- Re-deploy after pulling latest changes.
+
+### Backend link shows "Serverless Function has crashed"
+- Open backend project -> **Deployments** -> **Functions Logs**.
+- Most common cause: missing backend env vars.
+- Required at minimum:
+  - `MONGO_URL`
+  - `DB_NAME`
+  - Firebase admin vars (`FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL`, etc.)
+- After updating env vars, trigger **Redeploy**.
