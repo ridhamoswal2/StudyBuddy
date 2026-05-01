@@ -9,6 +9,7 @@ import ChatPage from "@/pages/ChatPage";
 import QuizPage from "@/pages/QuizPage";
 import FlashcardsPage from "@/pages/FlashcardsPage";
 import DocumentsPage from "@/pages/DocumentsPage";
+import PomodoroPage from "@/pages/PomodoroPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 
@@ -39,6 +40,7 @@ function AppLayout() {
           <Route path="/quizzes" element={<QuizPage />} />
           <Route path="/flashcards" element={<FlashcardsPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/pomodoro" element={<PomodoroPage />} />
         </Routes>
       </main>
       <SearchPanel isOpen={searchOpen} onClose={() => setSearchOpen(false)} />

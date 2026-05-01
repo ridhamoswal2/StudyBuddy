@@ -48,6 +48,11 @@ api_router = APIRouter(prefix="/api")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Small in-memory auth cache to reduce repeated token verification latency.
+TOKEN_CACHE_TTL_SECONDS = int(os.environ.get("TOKEN_CACHE_TTL_SECONDS", "90"))
+TOKEN_CACHE_MAX_SIZE = int(os.environ.get("TOKEN_CACHE_MAX_SIZE", "1024"))
+token_user_cache: dict[str, tuple[dict, datetime]] = {}
+
 # ==================== AUTH HELPERS ====================
 
 def init_firebase():
@@ -119,9 +124,25 @@ async def get_current_user(request: Request) -> dict:
 
     id_token = auth_header[7:]
     try:
+        cached = token_user_cache.get(id_token)
+        now = datetime.now(timezone.utc)
+        if cached:
+            cached_user, expires_at = cached
+            if now < expires_at:
+                return cached_user
+            token_user_cache.pop(id_token, None)
+
         init_firebase()
         decoded = firebase_auth.verify_id_token(id_token)
-        return await upsert_user_from_firebase(decoded)
+        user = await upsert_user_from_firebase(decoded)
+
+        if len(token_user_cache) >= TOKEN_CACHE_MAX_SIZE:
+            # Drop the oldest-expiring entry to keep memory bounded.
+            oldest_token = min(token_user_cache.items(), key=lambda item: item[1][1])[0]
+            token_user_cache.pop(oldest_token, None)
+
+        token_user_cache[id_token] = (user, now + timedelta(seconds=TOKEN_CACHE_TTL_SECONDS))
+        return user
     except Exception as exc:
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc}")
 
@@ -898,6 +919,87 @@ async def get_progress_stats(request: Request):
         "total_activities": total_activities
     }
 
+
+async def compute_progress_overview(uid: str) -> dict:
+    total_chats = await db.chat_sessions.count_documents({"user_id": uid})
+    total_quizzes = await db.quizzes.count_documents({"user_id": uid})
+    completed_quizzes = await db.quizzes.count_documents({"completed": True, "user_id": uid})
+    total_flashcards = await db.flashcard_sets.count_documents({"user_id": uid})
+    total_documents = await db.documents.count_documents({"is_deleted": False, "user_id": uid})
+    total_activities = await db.study_activities.count_documents({"user_id": uid})
+
+    quiz_scores = await db.quizzes.find(
+        {"completed": True, "user_id": uid},
+        {"_id": 0, "score": 1, "total": 1}
+    ).to_list(100)
+    avg_score = 0
+    if quiz_scores:
+        scores = [int((q["score"] / q["total"]) * 100) for q in quiz_scores if q.get("total", 0) > 0]
+        avg_score = int(sum(scores) / len(scores)) if scores else 0
+
+    activities = await db.study_activities.find({"user_id": uid}, {"_id": 0}).sort("created_at", -1).to_list(50)
+
+    # Calculate streak from recent activity dates
+    streak_source = await db.study_activities.find(
+        {"user_id": uid},
+        {"_id": 0, "created_at": 1}
+    ).sort("created_at", -1).to_list(1000)
+    streak = 0
+    if streak_source:
+        dates = set()
+        for a in streak_source:
+            try:
+                dt = datetime.fromisoformat(a["created_at"])
+                dates.add(dt.date())
+            except (ValueError, KeyError):
+                pass
+        today = datetime.now(timezone.utc).date()
+        current = today
+        while current in dates:
+            streak += 1
+            current -= timedelta(days=1)
+
+    now = datetime.now(timezone.utc)
+    week_ago = now - timedelta(days=7)
+    weekly_activities = await db.study_activities.find(
+        {"created_at": {"$gte": week_ago.isoformat()}, "user_id": uid},
+        {"_id": 0}
+    ).to_list(1000)
+    daily = {}
+    for i in range(7):
+        day = (now - timedelta(days=6 - i)).strftime("%a")
+        daily[day] = 0
+    for a in weekly_activities:
+        try:
+            dt = datetime.fromisoformat(a["created_at"])
+            day = dt.strftime("%a")
+            if day in daily:
+                daily[day] += 1
+        except (ValueError, KeyError):
+            pass
+
+    return {
+        "stats": {
+            "total_chats": total_chats,
+            "total_quizzes": total_quizzes,
+            "completed_quizzes": completed_quizzes,
+            "total_flashcards": total_flashcards,
+            "total_documents": total_documents,
+            "avg_quiz_score": avg_score,
+            "streak": streak,
+            "total_activities": total_activities,
+        },
+        "activity": activities,
+        "weekly": [{"day": k, "count": v} for k, v in daily.items()],
+        "generated_at": now.isoformat(),
+    }
+
+
+@api_router.get("/progress/overview")
+async def get_progress_overview(request: Request):
+    user = await get_current_user(request)
+    return await compute_progress_overview(user["_id"])
+
 @api_router.get("/progress/activity")
 async def get_activity_history(request: Request):
     user = await get_current_user(request)
@@ -930,6 +1032,78 @@ async def get_weekly_activity(request: Request):
             pass
     
     return [{"day": k, "count": v} for k, v in daily.items()]
+
+# ==================== POMODORO ENDPOINTS ====================
+
+class PomodoroSessionCompleteRequest(BaseModel):
+    mode: str  # focus | short_break | long_break
+    duration_seconds: int
+
+
+@api_router.post("/pomodoro/session/complete")
+async def complete_pomodoro_session(req: PomodoroSessionCompleteRequest, request: Request):
+    user = await get_current_user(request)
+    normalized_mode = (req.mode or "").strip().lower()
+    if normalized_mode not in {"focus", "short_break", "long_break"}:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    duration_seconds = max(0, req.duration_seconds)
+
+    activity = StudyActivity(
+        activity_type="pomodoro",
+        description=f"Pomodoro {normalized_mode.replace('_', ' ')}: {duration_seconds // 60} min",
+        user_id=user["_id"],
+    )
+    await db.study_activities.insert_one(activity.model_dump())
+    return {"status": "ok", "activity": activity.model_dump()}
+
+
+@api_router.get("/pomodoro/stats")
+async def get_pomodoro_stats(request: Request):
+    user = await get_current_user(request)
+    uid = user["_id"]
+    now = datetime.now(timezone.utc)
+    day_start = datetime.combine(now.date(), datetime.min.time(), tzinfo=timezone.utc)
+
+    activities = await db.study_activities.find(
+        {"user_id": uid, "activity_type": "pomodoro"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(2000)
+
+    focus_sessions = []
+    today_focus_minutes = 0
+    total_focus_minutes = 0
+    for activity in activities:
+        description = activity.get("description", "").lower()
+        if "focus" not in description:
+            continue
+        focus_sessions.append(activity)
+        minutes_match = re.search(r"(\d+)\s*min", description)
+        mins = int(minutes_match.group(1)) if minutes_match else 0
+        total_focus_minutes += mins
+        try:
+            created_at = datetime.fromisoformat(activity["created_at"])
+            if created_at >= day_start:
+                today_focus_minutes += mins
+        except (ValueError, KeyError):
+            pass
+
+    total_sessions = len(focus_sessions)
+    avg_daily_focus = 0
+    if focus_sessions:
+        active_days = set()
+        for a in focus_sessions:
+            try:
+                active_days.add(datetime.fromisoformat(a["created_at"]).date())
+            except (ValueError, KeyError):
+                pass
+        avg_daily_focus = int(total_focus_minutes / len(active_days)) if active_days else 0
+
+    return {
+        "today_focus_minutes": today_focus_minutes,
+        "total_sessions": total_sessions,
+        "total_focus_hours": round(total_focus_minutes / 60, 1),
+        "avg_daily_focus_minutes": avg_daily_focus,
+    }
 
 # Health check
 @api_router.get("/health")
@@ -979,9 +1153,16 @@ async def search(request: Request, q: str = Query("", min_length=1), type: str =
 # Include the router
 app.include_router(api_router)
 
-# CORS - use specific origin for credential cookies
-frontend_url = os.environ.get("FRONTEND_URL", "")
-cors_origins = [frontend_url] if frontend_url else os.environ.get('CORS_ORIGINS', '*').split(',')
+# CORS - allow explicit frontend URL plus optional comma-separated origins.
+frontend_url = os.environ.get("FRONTEND_URL", "").strip()
+configured_origins = os.environ.get("CORS_ORIGINS", "").strip()
+cors_origins = []
+if frontend_url:
+    cors_origins.append(frontend_url)
+if configured_origins:
+    cors_origins.extend([o.strip() for o in configured_origins.split(",") if o.strip()])
+if not cors_origins:
+    cors_origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

@@ -12,25 +12,40 @@ export default function Dashboard() {
   const [activities, setActivities] = useState([]);
   const [weekly, setWeekly] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchData = async () => {
       try {
-        const [statsRes, actRes, weeklyRes] = await Promise.all([
-          axios.get(`${API}/progress/stats`),
-          axios.get(`${API}/progress/activity`),
-          axios.get(`${API}/progress/weekly`)
-        ]);
-        setStats(statsRes.data);
-        setActivities(actRes.data.slice(0, 8));
-        setWeekly(weeklyRes.data);
+        const res = await axios.get(`${API}/progress/overview`);
+        if (cancelled) return;
+        setStats(res.data.stats);
+        setActivities((res.data.activity || []).slice(0, 8));
+        setWeekly(res.data.weekly || []);
+        setLastUpdatedAt(res.data.generated_at || "");
       } catch (e) {
         console.error("Failed to fetch dashboard data", e);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
+
     fetchData();
+    const pollId = window.setInterval(() => fetchData(), 10000);
+    const onFocus = () => fetchData();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(pollId);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
   }, []);
 
   const statCards = stats ? [
@@ -73,6 +88,11 @@ export default function Dashboard() {
           Welcome back
         </h1>
         <p className="text-base text-[#52525B] mt-2">Here's your learning overview</p>
+        {lastUpdatedAt && (
+          <p className="text-xs text-[#52525B] mt-1">
+            Live updates active • {new Date(lastUpdatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </p>
+        )}
       </div>
 
       {/* Stat Cards */}

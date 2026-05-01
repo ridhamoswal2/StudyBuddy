@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { BookOpen, MessageSquare, HelpCircle, Layers, FileText, BarChart3, X, Menu, Search, LogOut } from "lucide-react";
+import { BookOpen, MessageSquare, HelpCircle, Layers, FileText, BarChart3, X, Menu, Search, LogOut, Timer } from "lucide-react";
 
 const navItems = [
   { path: "/", icon: BarChart3, label: "Dashboard" },
@@ -8,6 +8,7 @@ const navItems = [
   { path: "/quizzes", icon: HelpCircle, label: "Quizzes" },
   { path: "/flashcards", icon: Layers, label: "Flashcards" },
   { path: "/documents", icon: FileText, label: "Documents" },
+  { path: "/pomodoro", icon: Timer, label: "Pomodoro" },
 ];
 
 export default function Sidebar({ isOpen, onToggle, onSearchOpen }) {
