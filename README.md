@@ -17,7 +17,6 @@
 9. [Project Structure](#project-structure)
 10. [Environment Variables](#environment-variables)
 11. [AI Usage Limits](#ai-usage-limits)
-12. [Getting Started](#getting-started)
 
 ---
 
@@ -366,46 +365,3 @@ If your key balance runs low:
 
 ### Switching to Your Own Key
 You can replace the Emergent key with your own OpenAI API key at any time. Just update the `EMERGENT_LLM_KEY` in the backend `.env` file and adjust the model configuration in `server.py`.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- MongoDB running locally
-
-### Backend Setup
-```bash
-cd /app/backend
-pip install -r requirements.txt
-# Configure .env with your settings
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-```
-
-### Frontend Setup
-```bash
-cd /app/frontend
-yarn install
-yarn start
-```
-
-### Default Login
-- **Email**: admin@studybuddy.com
-- **Password**: Admin@123
-
----
-
-## License
-
-This project was built with [Emergent](https://emergent.sh).
-
----
-
-## Free Deployment
-
-For Firebase Auth + MongoDB Atlas + OpenRouter/Gemini free-tier deployment, use:
-
-- `DEPLOY_FREE.md`
-- `DEPLOY_VERCEL.md` (Vercel-specific frontend + backend setup)
